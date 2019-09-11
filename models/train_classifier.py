@@ -1,16 +1,58 @@
 import sys
+import re
+import pandas as pd
+import numpy as np
+import nltk
+from sqlalchemy import create_engine
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+nltk.download('punkt')
+nltk.download('wordnet')
 
 
 def load_data(database_filepath):
-    pass
+    engine = create_engine(database_filepath)
+    df = pd.read_sql_table('Disaster Response Data', engine)
+    X = df[['message']]
+    y = df[['related', 'request', 'offer',
+       'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
+       'security', 'military', 'child_alone', 'water', 'food', 'shelter',
+       'clothing', 'money', 'missing_people', 'refugees', 'death', 'other_aid',
+       'infrastructure_related', 'transport', 'buildings', 'electricity',
+       'tools', 'hospitals', 'shops', 'aid_centers', 'other_infrastructure',
+       'weather_related', 'floods', 'storm', 'fire', 'earthquake', 'cold',
+       'other_weather', 'direct_report']]
+    return X, y
 
 
 def tokenize(text):
-    pass
+    r = '[^a-zA-Z0-9]'
+    text = re.sub(r, ' ', text)
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    
+    clean_tokens = []
+    for t in tokens:
+        clean_t = lemmatizer.lemmatize(t).lower().strip()
+        clean_tokens.append(clean_t)
+    
+    return clean_tokens
+    
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer = tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+    ])
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
