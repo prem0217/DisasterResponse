@@ -17,9 +17,9 @@ nltk.download('wordnet')
 
 
 def load_data(database_filepath):
-    engine = create_engine(database_filepath)
-    df = pd.read_sql_table('Disaster Response Data', engine)
-    X = df[['message']]
+    engine = create_engine('sqlite:///'+database_filepath)
+    df = pd.read_sql_table('Disaster_Response_Data', engine)
+    X = df['message']
     y = df[['related', 'request', 'offer',
        'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
        'security', 'military', 'child_alone', 'water', 'food', 'shelter',
@@ -28,7 +28,8 @@ def load_data(database_filepath):
        'tools', 'hospitals', 'shops', 'aid_centers', 'other_infrastructure',
        'weather_related', 'floods', 'storm', 'fire', 'earthquake', 'cold',
        'other_weather', 'direct_report']]
-    return X, y
+    category_names = y.columns
+    return X, y, category_names
 
 
 def tokenize(text):
