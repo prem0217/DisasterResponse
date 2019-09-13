@@ -12,13 +12,16 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+import pickle
+
 nltk.download('punkt')
 nltk.download('wordnet')
 
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///'+database_filepath)
-    df = pd.read_sql_table('Disaster_Response_Data', engine)
+    df = pd.read_sql_table('Disaster Response Data', engine)
     X = df['message']
     y = df[['related', 'request', 'offer',
        'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
@@ -53,15 +56,31 @@ def build_model():
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
-    return pipeline
+    
+    parameters = {
+    'vect__ngram_range': ((1,1), (1,2)),
+    'tfidf__use_idf': (True, False),
+    }
 
+    cv = GridSearchCV(pipeline, parameters)
+    return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    model_pred = model.predict(X_test)
+    x = 0
+    while x<36:
+        print(category_names[x])
+        print(classification_report(Y_test[category_names[x]],model_pred[:,x]))
+        print('')
+        x+=1
+
 
 
 def save_model(model, model_filepath):
-    pass
+    save_model = open(model_filepath,"wb")
+    pickle.dump(model, save_model)
+    save_model.close()
+
 
 
 def main():

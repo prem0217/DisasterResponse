@@ -31,11 +31,12 @@ def clean_data(df):
     df = df[['id','message', 'original', 'genre']]
     df2 = df.join(categories, how='left')
     df2.drop_duplicates(inplace=True)
+    df2 = df2[df2.related != 2]
     return df2
 
 
 def save_data(df, database_filename):
-	engine = create_engine(database_filename)
+	engine = create_engine('sqlite:///'+database_filename)
 	df.to_sql('Disaster Response Data', engine, index=False, if_exists="replace")
       
 
