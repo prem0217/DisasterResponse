@@ -1,6 +1,7 @@
 import json
 import plotly
 import pandas as pd
+import logging
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -8,6 +9,7 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
+from plotly.graph_objs import Pie
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -42,25 +44,45 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    disaster_type = ['aid_related', 'infrastructure_related', 'weather_related']
+    disaster_counts = []
+    for type in disaster_type:
+        disaster_counts.append(df[type].sum())
+
+
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
+                Pie(
+                    values=genre_counts,
+                    labels=genre_names
                 )
             ],
 
             'layout': {
                 'title': 'Distribution of Message Genres',
+            }
+        },
+
+        {
+            'data': [
+                Bar(
+                    x=disaster_type,
+                    y=disaster_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Disaster Qualifiers',
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Disaster Type"
                 }
             }
         }
