@@ -18,7 +18,15 @@ import pickle
 nltk.download('punkt')
 nltk.download('wordnet')
 
+"""
+Creates Dataframe from sqlite database and splits into X and y dataframes
 
+input: database filepath
+output:
+    X: messages to be trained and tested on
+    y: catgeories used as qualifiers
+    category_names: catgeory names stored as a list
+"""
 def load_data(database_filepath):
     engine = create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql_table('Disaster Response Data', engine)
@@ -35,6 +43,11 @@ def load_data(database_filepath):
     return X, y, category_names
 
 
+"""
+Tokenizes text while removing all non alphanumeric characters, and lemmatizes the tokens
+
+input: String to be tokenized
+"""
 def tokenize(text):
     r = '[^a-zA-Z0-9]'
     text = re.sub(r, ' ', text)
@@ -49,7 +62,11 @@ def tokenize(text):
     return clean_tokens
     
 
+"""
+Builds model using GridSearch to find optimal model
 
+output: Model with given pipeline and parameters
+"""
 def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer = tokenize)),
@@ -65,6 +82,16 @@ def build_model():
     cv = GridSearchCV(pipeline, parameters)
     return cv
 
+
+"""
+Tests model with classification report
+
+input:
+    model: model to be tested
+    X_test: Values to be predicted with the model
+    y_test: true values to be compared with predictions
+    category_names: List of Category names that are tested
+"""
 def evaluate_model(model, X_test, Y_test, category_names):
     model_pred = model.predict(X_test)
     x = 0
@@ -75,7 +102,13 @@ def evaluate_model(model, X_test, Y_test, category_names):
         x+=1
 
 
+"""
+Saves Model into Pickle File
 
+input:
+    model: Model being pickled
+    model_filepath: Pickle file name and location
+"""
 def save_model(model, model_filepath):
     save_model = open(model_filepath,"wb")
     pickle.dump(model, save_model)

@@ -3,6 +3,12 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 
+"""
+Takes in 2 CSV files, converts them to Pandas Dataframes, and then merges them
+
+input: filepath of both CSV files
+output: merged DF
+"""
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
@@ -10,7 +16,12 @@ def load_data(messages_filepath, categories_filepath):
     df = messages.merge(categories, on='id')
     return df
 
+"""
+Cleans data by splitting categories and making new columns, then recombining into a new Dataframe. Drops duplicates and illogical data
 
+input: df to be cleaned
+output: Cleaned df
+"""
 def clean_data(df):
 	#split categories into a new df
     categories = df['categories'].str.split(';', expand = True)
@@ -34,12 +45,15 @@ def clean_data(df):
     df2 = df2[df2.related != 2]
     return df2
 
+"""
+Saves Dataframe to a sqlite database file
 
+input: dataframe to be saved, Database filename
+"""
 def save_data(df, database_filename):
 	engine = create_engine('sqlite:///'+database_filename)
 	df.to_sql('Disaster Response Data', engine, index=False, if_exists="replace")
       
-
 
 def main():
     if len(sys.argv) == 4:
